@@ -1,0 +1,27 @@
+name: Unpack binary assets
+# One-off helper: the GitHub connector used to publish this site can only write text files,
+# so binary images were uploaded as a base64 tarball in _upload/. This job decodes them,
+# verifies checksums, commits the real files to main and removes _upload/.
+on:
+  push:
+    branches: [main]
+    paths: ['_upload/**']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  unpack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode and verify
+        run: |
+          test -f _upload/binaries.tar.b64 || { echo "nothing to unpack"; exit 0; }
+          base64 -d _upload/binaries.tar.b64 | tar xvf -
+          sha256sum -c _upload/binaries.sha256
+          git rm -rq _upload
+          git add -A
+          git config user.name "github-actions[bot]"
+          git config user.email "41898333+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Add binary assets (favicon, icons, images) decoded from _upload" || echo "no changes"
+          git push
