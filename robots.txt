@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://mdeveloper310.github.io/crenshawvisualsmanagement/sitemap.xml
